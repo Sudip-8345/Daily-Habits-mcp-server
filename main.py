@@ -197,3 +197,5 @@ _ensure_db_initialized()
 if __name__ == "__main__":
     # For local HTTP testing (Claude Desktop typically uses stdio via `fastmcp run`)
     mcp.run(transport="http", host="0.0.0.0", port=8000)
+
+    
