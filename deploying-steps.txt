@@ -1,0 +1,10 @@
+Install uv
+Create new folder and open it in vs code
+open terminal
+uv init .
+uv add fastmcp 
+Create a server (code in main.py)
+uv run main.py
+test the server using mcp instructor
+create an account on FastMCP cloud
+Deploy on cloud

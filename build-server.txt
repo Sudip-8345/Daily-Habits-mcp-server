@@ -1,0 +1,73 @@
+# Steps & commands to build a local MCP server with fastmcp and Python (Windows)
+
+1) Create a project folder and enter it
+    > mkdir my-mcp-server
+    > cd my-mcp-server
+
+2) Create and activate a virtual environment
+    > py -m venv .venv
+    > .venv\Scripts\activate
+
+3) Install fastmcp
+    (.venv) > pip install fastmcp
+
+4) Create a minimal MCP server (server.py)
+
+    Create a file named `server.py` with this content:
+
+    --------------------------------------------------
+    from fastmcp import MCPServer, Tool
+
+    server = MCPServer(name="example-fastmcp")
+
+    @server.tool()
+    def echo(message: str) -> str:
+         """Echo back the provided message."""
+         return message
+
+    if __name__ == "__main__":
+         # Start an MCP-compliant server over stdio
+         server.run()
+    --------------------------------------------------
+
+5) Test-run the server locally
+    (.venv) > uv run fastmcp dev main.py
+
+    The process will now wait and speak MCP over stdio.
+    Integrate it by pointing your MCP-compatible client to this server.
+
+6) (Optional) Freeze dependencies
+    (.venv) > pip freeze > requirements.txt
+
+7) Using `uv` as an alternative workflow
+
+    a) Initialize a new project (creates `pyproject.toml`)
+        > uv init
+
+    b) Add the MCP dependency
+        > uv add fastmcp
+
+    c) Run and verify the server
+        > uv run fastmcp run server.py
+
+        The process will stay running and speak MCP over stdio.
+
+8) Register the server in Claude Desktop (Windows)
+
+    a) Locate or create the config file:
+        %APPDATA%\Claude\claude_desktop_config.json
+
+    b) Add an entry similar to:
+
+        {
+            "mcpServers": {
+            "example-fastmcp": {
+                "command": "uv",
+                "args": ["run", "server.py"],
+                "cwd": "C:/Users/students/Desktop/Sudip Workspace/sudip-mcp"
+            }
+            }
+        }
+
+    c) Restart Claude Desktop, open Settings → Developer → Model Context Protocol,
+        and enable the `example-fastmcp` server.

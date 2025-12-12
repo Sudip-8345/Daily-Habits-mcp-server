@@ -1,0 +1,13 @@
+# ...existing code...
+
+# Local SQLite database
+habits.db
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python virtual env
+.venv/
+__pycache__/
+*.pyc
