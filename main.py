@@ -9,6 +9,33 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "habits.db")
 mcp = FastMCP("Daily-Habbit")
 
 
+_db_initialized = False
+_db_init_lock: asyncio.Lock | None = None
+
+
+def _get_db_init_lock() -> asyncio.Lock:
+    global _db_init_lock
+    if _db_init_lock is None:
+        _db_init_lock = asyncio.Lock()
+    return _db_init_lock
+
+
+async def ensure_db_initialized() -> None:
+    """Create DB/tables exactly once per process.
+
+    This avoids a race where `fastmcp run/dev` accepts tool calls before the
+    background init task completes.
+    """
+    global _db_initialized
+    if _db_initialized:
+        return
+    async with _get_db_init_lock():
+        if _db_initialized:
+            return
+        await init_db()
+        _db_initialized = True
+
+
 async def init_db() -> None:
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
@@ -51,6 +78,7 @@ def _ensure_db_initialized() -> None:
 
 @mcp.tool()
 async def add_habit(name: str, description: str = ""):
+    await ensure_db_initialized()
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
         await db.execute(
@@ -63,6 +91,7 @@ async def add_habit(name: str, description: str = ""):
 
 @mcp.tool()
 async def list_habits():
+    await ensure_db_initialized()
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute(
@@ -74,6 +103,7 @@ async def list_habits():
 
 @mcp.tool()
 async def complete_habit(habit_id: int):
+    await ensure_db_initialized()
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
 
@@ -93,6 +123,7 @@ async def complete_habit(habit_id: int):
 
 @mcp.tool()
 async def list_completions():
+    await ensure_db_initialized()
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute("""
@@ -107,6 +138,7 @@ async def list_completions():
 
 @mcp.tool()
 async def delete_habit(habit_id: int):
+    await ensure_db_initialized()
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
         await db.execute("DELETE FROM habits WHERE id = ?", (habit_id,))
@@ -119,6 +151,7 @@ async def get_current_streak(habit_id: int) -> int:
     """
     Return the current consecutive-day streak for the given habit.
     """
+    await ensure_db_initialized()
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
         cursor = await db.execute("""
