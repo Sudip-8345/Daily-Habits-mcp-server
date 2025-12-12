@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "DailyHabitsAgent": {
+      "command": "C:/Users/students/Desktop/Sudip Workspace/sudip-mcp/.venv/Scripts/python.exe",
+      "args": ["C:/Users/students/Desktop/Sudip Workspace/sudip-mcp/main.py"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    }
+  }
+}
