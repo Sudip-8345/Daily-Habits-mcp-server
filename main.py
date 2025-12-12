@@ -4,7 +4,20 @@ import asyncio
 import aiosqlite
 from datetime import date, timedelta
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "habits.db")
+
+def _default_db_path() -> str:
+    # Many production/serverless environments mount the app directory read-only.
+    # /tmp is typically writable (but may be ephemeral).
+    if os.name == "nt":
+        return os.path.join(os.path.dirname(__file__), "habits.db")
+    return os.path.join("/tmp", "habits.db")
+
+
+# Allow overriding DB path in production via environment variable.
+DB_PATH = os.environ.get("HABITS_DB_PATH") or _default_db_path()
+
+# Ensure the DB directory exists (relevant when HABITS_DB_PATH includes folders).
+os.makedirs(os.path.dirname(DB_PATH) or ".", exist_ok=True)
 
 mcp = FastMCP("Daily-Habbit")
 
